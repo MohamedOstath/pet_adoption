@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/cache/cache.dart';
 import '../../../../core/storage/local/database/model/pet.dart';
@@ -52,7 +53,7 @@ class CustomSearchDelegate extends SearchDelegate {
         return GestureDetector(
           onTap: () {
             close(context, null);
-            navigateToDetails(context,items[index]);
+            navigateToDetails(context, items[index]);
           },
           child: ListTile(
             title: Text(matchQuery[index]),
@@ -78,9 +79,9 @@ class CustomSearchDelegate extends SearchDelegate {
       itemCount: matchQuery.length,
       itemBuilder: (context, index) {
         return GestureDetector(
-          onTap: (){
+          onTap: () {
             close(context, null);
-            navigateToDetails(context,items[index]);
+            navigateToDetails(context, items[index]);
           },
           child: ListTile(
             title: Text(matchQuery[index]),
@@ -91,9 +92,7 @@ class CustomSearchDelegate extends SearchDelegate {
   }
 }
 
-
-navigateToDetails(BuildContext context,Pet pet){
+navigateToDetails(BuildContext context, Pet pet) {
   CacheData().setPetId(pet.id);
   Navigator.pushNamed(context, Routes.petDetailsView);
 }
-

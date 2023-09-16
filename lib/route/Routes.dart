@@ -17,10 +17,10 @@ class RouteGenerator {
   static Route<dynamic> getRoute(RouteSettings settings) {
     switch (settings.name) {
       case Routes.splashView:
-        initSplash();
+        // initSplash();
         return MaterialPageRoute(builder: (_) => const SplashView());
       case Routes.homeView:
-        initPets();
+        // initPets();
         return MaterialPageRoute(builder: (_) => const HomeView());
       case Routes.petDetailsView:
         return MaterialPageRoute(builder: (_) => const PetDetailsView());
@@ -36,9 +36,9 @@ class RouteGenerator {
       builder: (_) =>
           Scaffold(
             appBar: AppBar(
-              title: Text(ManagerStrings.noRouteFound),
+              title: const Text(ManagerStrings.noRouteFound),
             ),
-            body: Center(
+            body: const Center(
               child: Text(ManagerStrings.noRouteFound),
             ),
           ),

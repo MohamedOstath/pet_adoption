@@ -37,4 +37,14 @@ class Pet {
       Constants.columnPetIsAdopted: isAdopted,
     };
   }
+
+  Pet copyWithIsAdopted(int newIsAdopted) {
+    return Pet()
+      ..id = this.id
+      ..name = this.name
+      ..age = this.age
+      ..price = this.price
+      ..description = this.description
+      ..isAdopted = newIsAdopted;
+  }
 }

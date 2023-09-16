@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
 import 'package:pet_adoption/core/cache/cache.dart';
 import 'package:pet_adoption/core/resources/manager_assets.dart';
 import 'package:pet_adoption/core/resources/manager_colors.dart';
@@ -7,12 +8,16 @@ import 'package:pet_adoption/core/resources/manager_font_size.dart';
 import 'package:pet_adoption/core/resources/manager_height.dart';
 import 'package:pet_adoption/core/resources/manager_strings.dart';
 import 'package:pet_adoption/core/resources/manager_width.dart';
-import 'package:pet_adoption/features/pets/presentation/controller/pets_controller.dart';
+import 'package:pet_adoption/features/pets/presentation/bloc/pets/pets_bloc.dart';
+import 'package:pet_adoption/features/pets/presentation/bloc/pets/pets_states.dart';
+import 'package:pet_adoption/features/pets/presentation/bloc/theme/theme_bloc.dart';
 import 'package:pet_adoption/features/pets/presentation/view/pets_search_delegate.dart';
 import 'package:pet_adoption/route/Routes.dart';
 import '../../../../core/resources/manager_radius.dart';
 import '../../../../core/resources/manager_tags.dart';
 import '../../../../core/storage/local/database/model/pet.dart';
+import '../bloc/theme/theme_events.dart';
+import '../bloc/theme/theme_states.dart';
 import 'history_view.dart';
 
 class HomeView extends StatelessWidget {
@@ -20,72 +25,93 @@ class HomeView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GetBuilder<PetsController>(builder: (controller) {
-      return Scaffold(
-        appBar: AppBar(
-          title: const Text(ManagerStrings.appName),
-          actions: [
-            IconButton(
-              onPressed: () {
-                controller.toggleThemeMode();
-              },
-              icon: Icon(
-                Get.isDarkMode ? Icons.dark_mode : Icons.light_mode,
-              ),
-            ),
-            IconButton(
-                onPressed: () {
-                  showSearch(
-                    context: context,
-                    delegate: CustomSearchDelegate(
-                      items: controller.pets,
-                    ),
-                  );
-                },
-                icon: const Icon(Icons.search)),
-            PopupMenuButton<String>(
-              itemBuilder: (BuildContext context) {
-                return [
-                  const PopupMenuItem<String>(
-                    value: 'item1',
-                    child: Text(ManagerStrings.adoptHistory),
+    // return GetBuilder<PetsController>(builder: (controller) {
+    return BlocBuilder<PetsBloc, PetsState>(
+      builder: (context, state) {
+        if (state is SuccessListState) {
+          return Scaffold(
+            appBar: AppBar(
+              title: const Text(ManagerStrings.appName),
+              actions: [
+                IconButton(
+                  onPressed: () {
+
+                    BlocProvider.of<ThemeBloc>(context).add(ChangeThemeEvent(
+                        apptheme:  BlocProvider.of<ThemeBloc>(context).state.appTheme ==
+                            Apptheme.light
+                            ? Apptheme.dark
+                            : Apptheme.light
+                    ));
+
+                  },
+                  icon: Icon(
+                    BlocProvider.of<ThemeBloc>(context).state.appTheme ==
+                            Apptheme.light
+                        ? Icons.dark_mode
+                        : Icons.light_mode,
                   ),
-                ];
-              },
-              onSelected: (String value) {
-                if (value == 'item1') {
-                  // Navigator.pushNamed(context, Routes.historyView);
-                  showModalBottomSheet(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return MyBottomSheet(); // Custom widget for the bottom sheet
+                ),
+                IconButton(
+                    onPressed: () {
+                      showSearch(
+                        context: context,
+                        delegate: CustomSearchDelegate(
+                          items: state.pets,
+                        ),
+                      );
                     },
-                  );
-                }
+                    icon: const Icon(Icons.search)),
+                PopupMenuButton<String>(
+                  itemBuilder: (BuildContext context) {
+                    return [
+                      const PopupMenuItem<String>(
+                        value: 'item1',
+                        child: Text(ManagerStrings.adoptHistory),
+                      ),
+                    ];
+                  },
+                  onSelected: (String value) {
+                    if (value == 'item1') {
+                      // Navigator.pushNamed(context, Routes.historyView);
+                      showModalBottomSheet(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return HistoryBottomSheet(); // Custom widget for the bottom sheet
+                        },
+                      );
+                    }
+                  },
+                ),
+              ],
+            ),
+            body: GridView.builder(
+              padding: const EdgeInsets.symmetric(
+                horizontal: ManagerWidth.w20,
+                vertical: ManagerHeight.h20,
+              ),
+              itemCount: state.pets.length,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                mainAxisSpacing: ManagerHeight.h10,
+                crossAxisSpacing: ManagerWidth.w10,
+                childAspectRatio: 0.85,
+              ),
+              itemBuilder: (context, index) {
+                return CustomPetItem(
+                  pet: state.pets[index],
+                );
               },
             ),
-          ],
-        ),
-        body: GridView.builder(
-          padding: const EdgeInsets.symmetric(
-            horizontal: ManagerWidth.w20,
-            vertical: ManagerHeight.h20,
-          ),
-          itemCount: controller.pets.length,
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            mainAxisSpacing: ManagerHeight.h10,
-            crossAxisSpacing: ManagerWidth.w10,
-            childAspectRatio: 0.85,
-          ),
-          itemBuilder: (context, index) {
-            return CustomPetItem(
-              pet: controller.pets[index],
-            );
-          },
-        ),
-      );
-    });
+          );
+        } else {
+          return Container(
+            color: ManagerColors.background,
+          );
+        }
+      },
+    );
+
+    // }
   }
 }
 
@@ -193,11 +219,12 @@ class CustomPetItem extends StatelessWidget {
                 ),
                 child: Text(
                   '${pet.age} year/s, ${pet.price}',
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: ManagerFontSize.s12,
-                    color: Get.isDarkMode
-                        ? ManagerColors.greyLight
-                        : ManagerColors.primaryColor,
+                    color: ManagerColors.primaryColor,
+                    // color: Get.isDarkMode
+                    //     ? ManagerColors.greyLight
+                    //     : ManagerColors.primaryColor,
                   ),
                 ),
               ),

@@ -5,6 +5,8 @@ import 'package:pet_adoption/core/resources/manager_colors.dart';
 import 'package:pet_adoption/core/resources/manager_height.dart';
 import 'package:pet_adoption/core/resources/manager_width.dart';
 
+import '../../../../route/Routes.dart';
+
 class SplashView extends StatefulWidget {
   const SplashView({super.key});
 
@@ -13,6 +15,18 @@ class SplashView extends StatefulWidget {
 }
 
 class _SplashViewState extends State<SplashView> {
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    Future.delayed(
+      const Duration(seconds: 3),
+      () {
+        Navigator.pushNamed(context, Routes.homeView);
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
